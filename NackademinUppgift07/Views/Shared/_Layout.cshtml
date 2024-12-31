@@ -1,0 +1,251 @@
+@inject ICartManager cartManager
+@inject MatrattRepository MatrattRepository
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+
+@{
+    List<MatrattTyp> matrattTypes = await MatrattRepository.GetMatrattTypesAsync();
+    int cartCount = cartManager.SavedCart.TotalCount;
+    string message = ViewData["Message"] as string ?? TempData["Message"] as string;
+    ApplicationUser AppUser = await UserManager.GetUserAsync(User);
+}
+
+@functions
+{
+    public string GetAntiXsrfRequestToken()
+    {
+        return Xsrf.GetAndStoreTokens(Context).RequestToken;
+    }
+}
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>@ViewData["Title"] - Tomasos</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #ff6b6b;
+            --secondary-color: #4ecdc4;
+        }
+        
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color) !important;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #ff5252;
+            border-color: #ff5252;
+        }
+        
+        .progress {
+            height: 0.5rem;
+        }
+        
+        .card {
+            transition: transform 0.2s;
+            border: none;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 2rem 0;
+        }
+        
+        .cart-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50%;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="@Url.Action("Index", "Tomasos")">
+                <i class="fas fa-pizza-slice me-2"></i>Tomasos
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a asp-controller="Tomasos" asp-action="Index" class="nav-link">
+                            <i class="fas fa-th-list me-1"></i>Alla
+                        </a>
+                    </li>
+                    @foreach (var type in matrattTypes)
+                    {
+                        <li class="nav-item">
+                            <a asp-controller="Tomasos" 
+                               asp-action="Category" 
+                               asp-route-beskrivning="@type.Beskrivning" 
+                               class="nav-link">
+                                @{
+                                    var icon = type.Beskrivning.ToLower() switch
+                                    {
+                                        "pizza" => "fa-pizza-slice",
+                                        "pasta" => "fa-utensils",
+                                        "sallad" => "fa-leaf",
+                                        "dryck" => "fa-glass-water",
+                                        _ => "fa-utensils"
+                                    };
+                                }
+                                <i class="fas @icon me-1"></i>@type.Beskrivning
+                            </a>
+                        </li>
+                    }
+                </ul>
+                
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item me-3">
+                        <a asp-controller="Tomasos" asp-action="ViewCart" class="nav-link">
+                            <i class="fas fa-shopping-cart me-1"></i>
+                            <span class="cart-badge">@cartCount</span>
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user me-1"></i>
+                            @(AppUser?.DisplayName ?? "Konto")
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            @if (SignInManager.IsSignedIn(User))
+                            {
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="Index">
+                                    <i class="fas fa-user-circle me-2"></i>Min profil</a></li>
+                                <li><a class="dropdown-item" asp-controller="Tomasos" asp-action="ListOrders">
+                                    <i class="fas fa-list me-2"></i>Mina beställningar</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="Logout">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logga ut</a></li>
+                            }
+                            else
+                            {
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="Login">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Logga in</a></li>
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="Register">
+                                    <i class="fas fa-user-plus me-2"></i>Registrera ny kund</a></li>
+                            }
+                            @if (SignInManager.IsSignedIn(User) && User.IsInRole(UserRole.Admin))
+                            {
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header">Admin</h6></li>
+                                <li><a class="dropdown-item" asp-controller="Admin" asp-action="CreatePizza">
+                                    <i class="fas fa-plus-circle me-2"></i>Ny maträtt</a></li>
+                                <li><a class="dropdown-item" asp-controller="Admin" asp-action="AlterProducts">
+                                    <i class="fas fa-cog me-2"></i>Hantera ingredienser</a></li>
+                                <li><a class="dropdown-item" asp-controller="Admin" asp-action="ListUsers">
+                                    <i class="fas fa-users me-2"></i>Hantera användare</a></li>
+                                <li><a class="dropdown-item" asp-controller="Admin" asp-action="ListOrders">
+                                    <i class="fas fa-clipboard-list me-2"></i>Hantera beställningar</a></li>
+                            }
+                        </ul>
+                    </li>
+                </ul>
+                
+                @if (AppUser != null)
+                {
+                    <div class="ms-3 text-center" style="min-width: 150px;">
+                        <small class="text-muted">Bonuspoäng</small>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-success" 
+                                 style="width: @(100 * AppUser.Points / (float)Bestallning.POINTS_FOR_FREE_FOOD)%"
+                                 role="progressbar"
+                                 aria-valuenow="@AppUser.Points"
+                                 aria-valuemin="0"
+                                 aria-valuemax="@Bestallning.POINTS_FOR_FREE_FOOD">
+                            </div>
+                        </div>
+                        <small class="text-muted">@AppUser.Points / @Bestallning.POINTS_FOR_FREE_FOOD</small>
+                    </div>
+                }
+            </div>
+        </div>
+    </nav>
+
+    <main class="container py-4">
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                @message
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        
+        @RenderBody()
+    </main>
+
+    <footer class="footer mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Om Tomasos</h5>
+                    <p>Vi serverar de bästa italienska rätterna i staden sedan 1990.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Öppettider</h5>
+                    <p>Måndag - Fredag: 11:00 - 22:00<br>
+                       Lördag - Söndag: 12:00 - 23:00</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Kontakt</h5>
+                    <p>
+                        <i class="fas fa-map-marker-alt me-2"></i>Restaurant Street 1, Stockholm<br>
+                        <i class="fas fa-phone me-2"></i>08-123 45 67<br>
+                        <i class="fas fa-envelope me-2"></i>info@tomasos.se
+                    </p>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col text-center">
+                    <p class="mb-0">&copy; @DateTime.Now.Year - Tomasos. Alla rättigheter förbehållna.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery (if needed) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    @RenderSection("scripts", required: false)
+</body>
+</html>

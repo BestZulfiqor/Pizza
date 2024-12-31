@@ -1,0 +1,55 @@
+﻿@model UserRegisterModel
+
+@{
+    ViewData["Title"] = "Konto";
+}
+
+@section Scripts
+{@Html.Partial("_ValidationScriptsPartial")}
+
+<form asp-action="Index" method="post">
+	<fieldset>
+		<legend>Ändra profildetaljer</legend>
+		<div asp-validation-summary="All"></div>
+		<p>
+			<label asp-for="UserName"></label>
+			<input type="text" data-val="false" disabled="disabled" value="@Model.UserName" />
+		</p>
+		<hr/>
+		<p>
+			<span asp-validation-for="DisplayName"></span>
+			<label asp-for="DisplayName"></label>
+			<input asp-for="DisplayName" />
+		</p>
+		<p>
+			<span asp-validation-for="Email"></span>
+			<label asp-for="Email"></label>
+			<input asp-for="Email" />
+		</p>
+		<hr />
+		<p>
+			<span asp-validation-for="PhoneNumber"></span>
+			<label asp-for="PhoneNumber"></label>
+			<input asp-for="PhoneNumber" />
+		</p>
+		<p>
+			<span asp-validation-for="Address"></span>
+			<label asp-for="Address"></label>
+			<input asp-for="Address" />
+		</p>
+		<p>
+			<span asp-validation-for="PostalCode"></span>
+			<label asp-for="PostalCode"></label>
+			<input asp-for="PostalCode" />
+		</p>
+		<p>
+			<span asp-validation-for="City"></span>
+			<label asp-for="City"></label>
+			<input asp-for="City" />
+		</p>
+		<hr />
+		<p>
+			<input type="submit" value="Spara" />
+		</p>
+	</fieldset>
+</form>

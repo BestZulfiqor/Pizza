@@ -1,0 +1,46 @@
+﻿@model Bestallning
+
+@{
+	ViewData["Title"] = "Kundvagn";
+}
+
+@{ await Html.RenderPartialAsync("_OrderPartial", Model); }
+
+@if (Model?.Kund == null)
+{
+	<section>
+		@if (Model?.TotalCount > 0)
+		{
+			<p>
+				<a class="button" asp-action="ClearCart">Töm varukorg</a>
+			</p>
+		}
+		else
+		{
+			<p>
+				<a class="button disabled">Töm varukorg</a>
+			</p>
+		}
+
+		@if (!User.Identity.IsAuthenticated)
+		{
+			<p>
+				<span class="form-error">Du måste vara inloggad för att kunna beställa din kundvagn.</span>
+				<a class="button disabled">Beställ varor</a>
+			</p>
+		}
+		else if (Model == null || Model.TotalCount == 0)
+		{
+			<p>
+				<span class="form-error">Kundvagnen måste innehålla minst 1 matvara.</span>
+				<a class="button disabled">Beställ varor</a>
+			</p>
+		}
+		else
+		{
+			<p>
+				<a asp-action="OrderCart" class="button">Beställ varor</a>
+			</p>
+		}
+	</section>
+}
