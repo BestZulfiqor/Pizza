@@ -1,59 +1,81 @@
-# Uppgift 7 - _Programmering med C# ASP.NET 1, Nackademin_
+# Задание 7 - _Программирование на C# ASP.NET 1, Nackademin_
 
-### Assignment
-> "Build a pizza ordering website using ASP.NET Core, Entity Framework, and Identity. As a user you shall be able to log in and order dishes and gain points for discounts, as well as see previous orders (and their delivery status). As a premium user you shall receive additional discounts. As an admin you shall be able to add new dishes (composed from a list of ingredients), as well as administrate users and orders from all users."
+### Задание
+> "Создать веб-сайт для заказа пиццы с использованием ASP.NET Core, Entity Framework и Identity. Пользователь должен иметь возможность войти в систему, заказывать блюда и получать баллы для скидок, а также просматривать предыдущие заказы (и их статус доставки). Премиум-пользователи получают дополнительные скидки. Администратор может добавлять новые блюда (составленные из списка ингредиентов), а также управлять пользователями и заказами всех пользователей."
 
 ---
 
-# TOMASOS !! :pizza:
+# ТОМАСОС !! :pizza:
 
-### Home page
-![Home page, shows all blog posts](/devlog/home_page.png)
+### Главная страница
+![Главная страница, показывает все блюда](/devlog/All.png)
 
-> Website is styled via a heavy combination between Bootstrap 3 and custom CSS. On the home page you can see all available dishes, or choose a category such as Pasta to filter out the rest.
+> Сайт стилизован с помощью комбинации Bootstrap 3 и пользовательского CSS. На главной странице вы можете увидеть все доступные блюда или выбрать категорию, например, "Паста", чтобы отфильтровать остальные.
 
-### Register user
-![Register view, create new user](/devlog/new_user.png)
+### Регистрация пользователя
+![Страница регистрации, создание нового пользователя](/devlog/register.png)
 
-> Users are free to register, and will be automatically referred to as "Regular User". An admin must manually promote a user to Premium user (which can be done via the Admin dashboard for Admin users) for the discounts as mentioned in the assignment. The role of admin user is however only gained through manual SQL queries.
+> Пользователи могут свободно регистрироваться и автоматически получают статус "Обычный пользователь". Администратор должен вручную повысить пользователя до Премиум-пользователя (это можно сделать через панель администратора) для получения скидок, упомянутых в задании. Роль администратора можно получить только через ручные SQL-запросы.
 >
-> The register form contains client-side validation.
+> Форма регистрации содержит клиентскую валидацию.
 
-### Add to card
-![Home page, add dish to cart](/devlog/ajax_cart.png)
+### Добавление в корзину
+![Главная страница, добавление блюда в корзину](/devlog/backet.png)
 
-> Adding to cart uses AJAX together with a popover to add without reloading the page. The cart is saved in session data (server-side) and will therefore not remain in a new web session.
+> Добавление в корзину использует AJAX вместе с всплывающим окном для добавления без перезагрузки страницы. Корзина сохраняется в данных сессии (на стороне сервера) и не сохраняется при новой веб-сессии.
 
-### Order cart
-![Cart view, order cart](/devlog/cart.png)
+### Оформление заказа
+![Страница корзины, оформление заказа](/devlog/order.png)
 
-> Having items in your cart, you can then order them. As this is a school assignment, this is only fictional. The order is only saved in the database. No payment is done.
+> Имея товары в корзине, вы можете их заказать. Поскольку это учебное задание, это только имитация. Заказ только сохраняется в базе данных. Оплата не производится.
 >
-> You can add dishes to your cart anonymously, but you must have a registered account to be able to order your cart.
+> Вы можете добавлять блюда в корзину анонимно, но для оформления заказа необходимо иметь зарегистрированную учетную запись.
+### Управление ингредиентами
+![Список ингредиентов, добавление или удаление](/devlog/resept.png)
 
-### Order receipt
-![Receipt view](/devlog/receipt.png)
+> В панели администратора вы можете добавлять и удалять ингредиенты. Однако нельзя удалить ингредиенты, которые используются в существующих блюдах. Список ингредиентов используется при добавлении нового блюда.
 
-> After an order you are presented with the receipt. All your receipts can be accessed via a tab in your profile.
->
-> All orders has the state of being delivered or not. An order can be marked as "delivered" only by an admin user (via their dashboard). This is to simulate an automatic delivery system which is not in place in this solution.
+### Создание/изменение блюда
+![Страница редактирования блюда](/devlog/new_food.png)
 
-### Discounts
-![Receipt view from premium user](/devlog/receipt_bonus.png)
+> Новые блюда можно добавлять из панели администратора. Объект блюда содержит название, категорию, описание, цену и список ингредиентов.
 
-> When ordering you gain points. 1 dish gives 10 points. Upon receiving 100 points you get one dish for free (cheapest dish in your cart).
->
-> As a premium user you are granted a discount of 20% when ordering 3 or more dishes at the same time.
+### Схема базы данных
+[Users] ────┐
+  │ id (PK) │
+  │ username│                 [Orders] ─────┐
+  │ password│                   │ id (PK)   │
+  │ email   │    1:N           │ user_id   │         [OrderItems] ───┐
+  │ role    ├──────────────────┤ total     │    1:N    │ id (PK)    │
+  │ points  │                  │ status    ├───────────┤ order_id   │
+  └─────────┘                  │ created_at│           │ dish_id    │
+                              └───────────┘           │ quantity   │
+                                                     └────────────┘
+                                                          │
+[Ingredients] ──┐                                        │
+  │ id (PK)     │                                        │
+  │ name        │         [DishIngredients]              │
+  │ stock       │    N:M    │ dish_id                   │
+  │ price       ├──────────┤ ingredient_id              │
+  └─────────────┘          └───────────────┐            │
+                                          │            │
+                           [Dishes] ───────┤            │
+                             │ id (PK)     │     1:N    │
+                             │ name        ├────────────┘
+                             │ description │
+                             │ price       │
+                             │ category    │
+                             └─────────────┘
 
-### Administrate ingredients
-![List of ingredients, add or remove](/devlog/ingredients.png)
+> База данных состоит из следующих основных таблиц:
+> - `Users`: Хранит информацию о пользователях, их роли и баллы
+> - `Orders`: Содержит заказы пользователей
+> - `OrderItems`: Детали каждого заказа (какие блюда и в каком количестве)
+> - `Dishes`: Каталог всех доступных блюд
+> - `Ingredients`: Список всех ингредиентов
+> - `DishIngredients`: Связывает блюда с их ингредиентами
 
-> As part of the admin dashboard you can add and remove ingredients. You cannot, however, remove ingredients that are used in existing dishes. The ingredients list is used when adding a new dish.
-
-### Create/alter dish
-![Edit dish page](/devlog/new_meal.png)
-
-> New dishes can be added from the admin dashboard. A dish object contains name, category, description, price, and items from the ingredients.
-
-### Database diagram
-![Database diagram from sqldbm.com](/devlog/database_diagram.png)
+> Основные связи:
+> - Один пользователь может иметь много заказов (1:N)
+> - Один заказ может содержать много позиций меню (1:N)
+> - Каждое блюдо может содержать много ингредиентов (N:M)

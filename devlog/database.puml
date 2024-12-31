@@ -1,0 +1,64 @@
+@startuml
+!theme plain
+skinparam linetype ortho
+
+entity "Users" as users {
+  * id : int <<PK>>
+  --
+  * username : varchar
+  * password : varchar
+  * email : varchar
+  * role : varchar
+  * points : int
+  created_at : datetime
+}
+
+entity "Orders" as orders {
+  * id : int <<PK>>
+  --
+  * user_id : int <<FK>>
+  * total_price : decimal
+  * status : varchar
+  created_at : datetime
+  delivered_at : datetime
+}
+
+entity "OrderItems" as order_items {
+  * id : int <<PK>>
+  --
+  * order_id : int <<FK>>
+  * dish_id : int <<FK>>
+  * quantity : int
+  * price : decimal
+}
+
+entity "Dishes" as dishes {
+  * id : int <<PK>>
+  --
+  * name : varchar
+  * description : text
+  * price : decimal
+  * category : varchar
+  created_at : datetime
+}
+
+entity "DishIngredients" as dish_ingredients {
+  * dish_id : int <<FK>>
+  * ingredient_id : int <<FK>>
+}
+
+entity "Ingredients" as ingredients {
+  * id : int <<PK>>
+  --
+  * name : varchar
+  * stock : int
+  price : decimal
+}
+
+users ||--o{ orders
+orders ||--|{ order_items
+order_items }|--|| dishes
+dishes }|--|| dish_ingredients
+ingredients ||--|| dish_ingredients
+
+@enduml
